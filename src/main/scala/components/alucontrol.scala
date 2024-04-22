@@ -32,8 +32,22 @@ class ALUControl extends Module {
     val operation = Output(UInt(5.W))
   })
 
-  io.operation := "b11111".U // Invalid
+  io.operation := "b11111".U // Invalid default if no conditions are met
 
   //Your code goes here
+
+  //determine alu operation based on aluop input
+  switch(io.aluop) { //none
+    is("b000.U"){
+      io.operation := "b11111".U
+    }
+    
+    is("b001.U") { //64-bit R-type instructions
+
+    }
+
+
+
+  }
 
 }
