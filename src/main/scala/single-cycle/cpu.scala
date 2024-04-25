@@ -42,21 +42,26 @@ class SingleCycleCPU(implicit val conf: CPUConfig) extends BaseCPU {
     instruction := io.imem.instruction(31, 0)
   }
 
-  //Your code goes here
+  pc := pc + 4.U //increment the pc for multi-cycle
+
+  //connect alu control inputs to control output and instruction
   aluControl.io.aluop := control.io.aluop
   aluControl.io.funct7 := instruction(31,25)
   aluControl.io.funct3 := instruction(14,12)
 
+  //connect alu inputs to alu control output and register outputs
   alu.io.operation := aluControl.io.operation
   alu.io.operand1 := registers.io.readdata1
   alu.io.operand2 := registers.io.readdata2
 
+  //connect register inputs to alu and control outputs and instruction
   registers.io.writedata := alu.io.result
   registers.io.readreg1 := instruction(19,15)
   registers.io.readreg2 := instruction(24,20)
   registers.io.writereg := instruction(11,7)
   registers.io.wen := control.io.writeback_valid
 
+  //connect control input to instruction
   control.io.opcode := instruction(6,0)
 }
 
