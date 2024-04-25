@@ -55,11 +55,19 @@ class SingleCycleCPU(implicit val conf: CPUConfig) extends BaseCPU {
   alu.io.operand2 := registers.io.readdata2
 
   //connect register inputs to alu and control outputs and instruction
-  registers.io.writedata := alu.io.result
-  registers.io.readreg1 := instruction(19,15)
-  registers.io.readreg2 := instruction(24,20)
-  registers.io.writereg := instruction(11,7)
-  registers.io.wen := control.io.writeback_valid
+  when(instruction(11,7) =/= 0.U) { //if it is not writing to the 0 register, continue as normal
+    registers.io.wen := control.io.writeback_valid
+    registers.io.writedata := alu.io.result
+    registers.io.readreg1 := instruction(19,15)
+    registers.io.readreg2 := instruction(24,20)
+    registers.io.writereg := instruction(11,7)
+  } .otherwise { //if it is trying to write to the 0 register, don't let it, write a 0 instead
+    registers.io.wen := control.io.writeback_valid
+    registers.io.writedata := 0.U //write a 0 instead of the alu result
+    registers.io.readreg1 := instruction(19,15)
+    registers.io.readreg2 := instruction(24,20)
+    registers.io.writereg := instruction(11,7)
+  }
 
   //connect control input to instruction
   control.io.opcode := instruction(6,0)
